@@ -248,6 +248,7 @@ def update_NN(n_clicks, graph, tg_sd_noise,x_sd_noise, input1, input2, input3, d
 
         traces2.extend([trace_train, trace_test])
 
+
         # Metrics
         score_test = model.evaluate(x_test, tg_test, verbose=0)
         score_train = model.evaluate(x_train, tg_train, verbose=0)
