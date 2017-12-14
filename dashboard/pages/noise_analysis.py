@@ -66,7 +66,7 @@ def render_noise_analysis_layout():
         html.Div([
                 html.Div(id='output-a' , className='four columns'),
                 html.Div(id='output-b', className='four columns')
-        ], className='row', style={'margin-bottom': '50px', 'margin-left': '10px'}),
+        ], className='row', style={'margin-bottom': '10px', 'margin-left': '10px'}),
         html.Div([
             html.Div([
                 dcc.Slider(
@@ -166,13 +166,13 @@ def update_figure(tg_sd_noise):
     dash.dependencies.Output('output-a', 'children'),
     [dash.dependencies.Input('target-noise-slider', 'value')])
 def callback_a(value):
-    return 'You\'ve selected "{}"'.format(value)
+    return 'Noise in output (SD): "{}"'.format(value)
 
 @app.callback(
     dash.dependencies.Output('output-b', 'children'),
     [dash.dependencies.Input('x-noise-slider', 'value')])
 def callback_a(value):
-    return 'You\'ve selected "{}"'.format(value)
+    return 'Noise in training input (SD): "{}"'.format(value)
 
 @app.callback(
     dash.dependencies.Output('graph2', 'figure'),
