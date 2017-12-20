@@ -12,8 +12,8 @@ from dashboard.app import app
 
 # Creating Input & Output
 np.random.seed(42)
-x = np.linspace(0, 3*np.pi, num=1000)
-target = np.sin(x)
+x = np.linspace(-1, 1, num=1000)
+target = np.sin(3*np.square(x+0.8))
 
 # Neural Network
 def render_noise_analysis_layout():
@@ -72,15 +72,15 @@ def render_noise_analysis_layout():
                 dcc.Slider(
                     id='target-noise-slider',
                     min=0,
-                    max=4,
+                    max=2,
                     value=0,
-                    step=0.1,
+                    step=0.01,
                     marks={
                         0: {'label': '0'},
+                        0.5: {'label': '0.5'},
                         1: {'label': '1'},
+                        1.5: {'label': '1.5'},
                         2: {'label': '2'},
-                        3: {'label': '3'},
-                        4: {'label': '4'},
                     },
                 ),
             ], className='four columns'),
@@ -88,15 +88,14 @@ def render_noise_analysis_layout():
                 dcc.Slider(
                     id='x-noise-slider',
                     min=0,
-                    max=4,
+                    max=0.5,
                     value=0,
-                    step=0.1,
+                    step=0.01,
                     marks={
                         0: {'label': '0'},
-                        1: {'label': '1'},
-                        2: {'label': '2'},
-                        3: {'label': '3'},
-                        4: {'label': '4'},
+                        0.15: {'label': '0.15'},
+                        0.3: {'label': '0.3'},
+                        0.5: {'label': '0.5'}
                     },
 
                 ),
@@ -141,6 +140,7 @@ def render_noise_analysis_layout():
 def update_figure(tg_sd_noise):
 
     # Introducing noise in output
+    np.random.seed(42)
     noise_tg = np.random.normal(0, tg_sd_noise, len(x))
     tg_noise = target + noise_tg
 
@@ -206,6 +206,9 @@ def update_NN(n_clicks, graph, tg_sd_noise,x_sd_noise, input1, input2, input3, d
         x_train, x_test, tg_train, tg_test = train_test_split(
             x, tg_noise, test_size=0.3, random_state=42)
 
+        x_tr, x_te, y_train, y_test = train_test_split(
+            x, target, test_size=0.3, random_state=42)
+
         # Putting noise into training input
         noise_x = np.random.normal(0, x_sd_noise, len(x_train))
         x_noise = x_train + noise_x
@@ -252,13 +255,21 @@ def update_NN(n_clicks, graph, tg_sd_noise,x_sd_noise, input1, input2, input3, d
         # Metrics
         score_test = model.evaluate(x_test, tg_test, verbose=0)
         score_train = model.evaluate(x_train, tg_train, verbose=0)
-        train_mape='Train MAPE: '+str(int(round(score_train[2],0)))+'%'
-        test_mape=' Test MAPE: '+str(int(round(score_test[2],0)))+'%'
-        train_mse=' Train MSE: '+str(round(score_train[1],4)*100)+'%'
-        test_mse=' Test MSE: '+str(round(score_test[1],4)*100)+'%'
+
+        score_test_A = model.evaluate(x_te, y_test, verbose=0)
+        score_train_A = model.evaluate(x_tr, y_train, verbose=0)
+
+        # train_mape='Train MAPE: '+str(int(round(score_train[2],0)))+'%'
+        # test_mape=' Test MAPE: '+str(int(round(score_test[2],0)))+'%'
+        # train_mse_old=' Train MSE_old: '+str(round(score_train[1],3))
+        # test_mse_old=' Test MSE-old: '+str(round(score_test[1],3))
+
+        train_mse = ' Train MSE: ' + str(round(score_train_A[1], 3))
+        test_mse = ' Test MSE: ' + str(round(score_test_A[1], 3))
+
         noise_all=' Noise(x,y):('+str(tg_sd_noise)+','+str(x_sd_noise)+')'
 
-    return {'data': traces2, 'layout':  {'title':train_mape+test_mape+train_mse+test_mse+noise_all}}
+    return {'data': traces2, 'layout':  {'title':train_mse+','+test_mse+','+noise_all}}
 
 
 
