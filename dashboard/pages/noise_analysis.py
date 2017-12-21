@@ -12,8 +12,11 @@ from dashboard.app import app
 
 # Creating Input & Output
 np.random.seed(42)
-x = np.linspace(-1, 1, num=1000)
+x = np.linspace(-1, 1, num=100)
 target = np.sin(3*np.square(x+0.8))
+# Splitting data
+x_train, x_test, tg_train, tg_test = train_test_split(
+    x, target, test_size=0.5, random_state=42)
 
 # Neural Network
 def render_noise_analysis_layout():
@@ -54,7 +57,6 @@ def render_noise_analysis_layout():
             )
         ]
     )
-
     layout = html.Div([
         header,
         html.Div([
@@ -100,7 +102,7 @@ def render_noise_analysis_layout():
 
                 ),
             ], className='four columns'),
-        ], className='row', style={'margin-bottom': '50px', 'margin-left': '10px'}),
+        ], className='row', style={'margin-bottom': '50px', 'margin-left': '2px'}),
         html.Div([
             html.Div(id='output-container-button_1',
                      children='Neurons in first layer', className='four columns'),
@@ -108,41 +110,50 @@ def render_noise_analysis_layout():
                      children='Neurons in second layer', className='four columns'),
             html.Div(id='output-container-button_3',
                      children='Number of epochs', className='four columns')
-        ], className='row', style={'margin-bottom': '2px','margin-left': '10px'}),
+        ], className='row', style={'margin-bottom': '2px','margin-left': '4px'}),
         html.Div([
-            dcc.Input(id='input-1', type='text', value=100, className='four columns'),
-            dcc.Input(id='input-2', type='text', value=100, className='four columns'),
+            dcc.Input(id='input-1', type='text', value=25, className='four columns'),
+            dcc.Input(id='input-2', type='text', value=25, className='four columns'),
             dcc.Input(id='input-3', type='text', value=200, className='four columns')
-        ], className='row', style={'margin-bottom': '50px', 'margin-left': '10px'}),
+        ], className='row', style={'margin-bottom': '50px', 'margin-left': '4px'}),
         html.Div([
+            html.Div(id='output-container-button_4',
+                     children='Generating number', className='four columns')
+            ], className='row', style={'margin-bottom': '2px', 'margin-left': '15px'}),
+        html.Div([
+            dcc.Input(id='n_noise_points', type='text', value=10, className='four columns'),
             dcc.Dropdown(id='dropdown-activation',
                          options=[
                              {'label': 'relu', 'value': 'relu'},
                              {'label': 'tanh', 'value': 'tanh'}
                          ],
                          value='tanh', className='four columns'
-                         )
-        ], className='row', style={'margin-bottom': '30px', 'margin-left': '1330px'}),
-        html.Div([
-            html.Button(id='submit-button', n_clicks=0, children='Start NN', className='four columns'),
-            ], className='row', style={'margin-bottom': '20px', 'margin-left': '700px'}),
+                         ),
+            html.Button(id='submit-button', n_clicks=0, children='Start NN', className='four columns')
+        ], className='row', style={'margin-bottom': '30px', 'margin-left': '10px'}),
         html.Div([
             dcc.Graph(id='loss-function')], className='row')
     ])
 
     return layout
 
+def gen_xy_noise(x,y, x_sd=10,tg_sd=10, n=10):
+    x_noise = np.repeat(x, n) + np.random.normal(0, x_sd, n * len(x))
+    y_noise = np.repeat(y, n) + np.random.normal(0, tg_sd, n * len(y))
+    return x_noise, y_noise
+
 @app.callback(
     dash.dependencies.Output('graph', 'figure'),
-    [dash.dependencies.Input('target-noise-slider', 'value'),
-     ]
+    [dash.dependencies.Input('x-noise-slider', 'value'),
+    dash.dependencies.Input('target-noise-slider', 'value'),
+    dash.dependencies.Input('n_noise_points', 'value')]
 )
-def update_figure(tg_sd_noise):
 
+def update_figure(x_sd_noise,tg_sd_noise, n_noise_points):
     # Introducing noise in output
     np.random.seed(42)
-    noise_tg = np.random.normal(0, tg_sd_noise, len(x))
-    tg_noise = target + noise_tg
+
+    generated_data = gen_xy_noise(x,target, x_sd_noise, tg_sd_noise, int(n_noise_points))
 
     traces = []
 
@@ -153,10 +164,10 @@ def update_figure(tg_sd_noise):
         name='target')
 
     trace_noise = go.Scatter(
-        x=x,
-        y=tg_noise,
+        x=generated_data[0],
+        y=generated_data[1],
         mode='markers',
-        name='target+noise')
+        name='generated training noise')
 
     traces.extend([trace_target, trace_noise])
 
@@ -183,11 +194,12 @@ def callback_a(value):
     dash.dependencies.State('input-1', 'value'),
     dash.dependencies.State('input-2', 'value'),
     dash.dependencies.State('input-3', 'value'),
-    dash.dependencies.State('dropdown-activation', 'value')
+    dash.dependencies.State('dropdown-activation', 'value'),
+    dash.dependencies.State('n_noise_points', 'value')
      ]
 )
 
-def update_NN(n_clicks, graph, tg_sd_noise,x_sd_noise, input1, input2, input3, dropdown):
+def update_NN(n_clicks, graph, tg_sd_noise,x_sd_noise, input1, input2, input3, dropdown,n_noise_points):
     traces2 = []
     test_mse=''
     train_mse=''
@@ -196,80 +208,87 @@ def update_NN(n_clicks, graph, tg_sd_noise,x_sd_noise, input1, input2, input3, d
     if graph is not None:
         traces2.extend(graph['data'])
     if n_clicks:
-        np.random.seed(42)
-
         # Introducing noise in output
-        noise_tg = np.random.normal(0, tg_sd_noise, len(x))
-        tg_noise = target + noise_tg
+        np.random.seed(42)
+        # noise_tg = np.random.normal(0, tg_sd_noise, len(x))
+        # tg_noise = target + noise_tg
 
-        # Splitting data
-        x_train, x_test, tg_train, tg_test = train_test_split(
-            x, tg_noise, test_size=0.3, random_state=42)
-
-        x_tr, x_te, y_train, y_test = train_test_split(
-            x, target, test_size=0.3, random_state=42)
+        generated_data = gen_xy_noise(x, target, x_sd_noise, tg_sd_noise, int(n_noise_points))
 
         # Putting noise into training input
-        noise_x = np.random.normal(0, x_sd_noise, len(x_train))
-        x_noise = x_train + noise_x
+        # noise_x = np.random.normal(0, x_sd_noise, len(x_train))
+        # x_noise = x_train + noise_x
 
-        # Building model
-        model = Sequential()
-        model.add(Dense(int(input1), activation=dropdown, input_shape=(1,)))
-        model.add(Dense(int(input2), activation=dropdown))
-        model.add(Dense(1, activation='linear'))
-        model.compile(loss='mse',
+        # Building model№1 for original data
+        model_1 = Sequential()
+        model_1.add(Dense(int(input1), activation=dropdown, input_shape=(1,)))
+        model_1.add(Dense(int(input2), activation=dropdown))
+        model_1.add(Dense(1, activation='linear'))
+        model_1.compile(loss='mse',
                       optimizer='adam',
                       metrics=['mse', 'mape'])
-        history = model.fit(x_noise, tg_train,
-                            batch_size=100,
+        history = model_1.fit(x_train, tg_train,
+                            batch_size=32,
                             epochs=int(input3),
                             verbose=1)
         # Comparing results
-        NN_pred_test = model.predict(x_test).reshape(1, -1)
-        NN_pred_train = model.predict(x_train).reshape(1, -1)
+        NN1_pred_test = model_1.predict(x).reshape(1, -1)
+        # NN_pred_train = model.predict(x_train).reshape(1, -1)
+
+        # Building model№2 for generated data
+        model_2 = Sequential()
+        model_2.add(Dense(int(input1), activation=dropdown, input_shape=(1,)))
+        model_2.add(Dense(int(input2), activation=dropdown))
+        model_2.add(Dense(1, activation='linear'))
+        model_2.compile(loss='mse',
+                      optimizer='adam',
+                      metrics=['mse', 'mape'])
+        history = model_2.fit(generated_data[0], generated_data[1],
+                            batch_size=32,
+                            epochs=int(input3),
+                            verbose=1)
+        # Comparing results
+        NN2_pred_test = model_2.predict(generated_data[0]).reshape(1, -1)
 
         trace_test = go.Scatter(
-            x=x_test,
-            y=NN_pred_test[0],
+            x=x,
+            y=NN1_pred_test[0],
             mode='markers',
-            name='NN_test',
+            name='NN_1',
             marker=dict(size=10,
                         line=dict(width=3),
                         opacity=0.5
                         ))
 
         trace_train = go.Scatter(
-            x=x_train,
-            y=NN_pred_train[0],
+            x=generated_data[0],
+            y=NN2_pred_test[0],
             mode='markers',
-            name='NN_train',
+            name='NN_2',
             marker=dict(size=5,
                         line=dict(width=1),
                         opacity=0.5
                         ))
 
-        traces2.extend([trace_train, trace_test])
+        traces2.extend([trace_test,trace_train])
 
 
         # Metrics
-        score_test = model.evaluate(x_test, tg_test, verbose=0)
-        score_train = model.evaluate(x_train, tg_train, verbose=0)
+        score_test_1 = model_1.evaluate(x, target, verbose=0)
+        score_train_1 = model_1.evaluate(x_train, tg_train, verbose=0)
 
-        score_test_A = model.evaluate(x_te, y_test, verbose=0)
-        score_train_A = model.evaluate(x_tr, y_train, verbose=0)
+        score_test_2 = model_2.evaluate(x, target, verbose=0)
+        score_train_2 = model_2.evaluate(x_train, tg_train, verbose=0)
 
-        # train_mape='Train MAPE: '+str(int(round(score_train[2],0)))+'%'
-        # test_mape=' Test MAPE: '+str(int(round(score_test[2],0)))+'%'
-        # train_mse_old=' Train MSE_old: '+str(round(score_train[1],3))
-        # test_mse_old=' Test MSE-old: '+str(round(score_test[1],3))
+        # train_mse_1 = ' Train MSE_1: ' + str(round(score_train_1[1], 3))
+        test_mse_1 = ' Test MSE_1: ' + str(round(score_test_1[1], 3))
 
-        train_mse = ' Train MSE: ' + str(round(score_train_A[1], 3))
-        test_mse = ' Test MSE: ' + str(round(score_test_A[1], 3))
+        # train_mse_2 = ' Train MSE_2: ' + str(round(score_train_2[1], 3))
+        test_mse_2 = ' Test MSE_2: ' + str(round(score_test_2[1], 3))
 
         noise_all=' Noise(x,y):('+str(tg_sd_noise)+','+str(x_sd_noise)+')'
 
-    return {'data': traces2, 'layout':  {'title':train_mse+','+test_mse+','+noise_all}}
+    return {'data': traces2, 'layout':  {'title':test_mse_1+','+test_mse_2+','+noise_all}}
 
 
 
