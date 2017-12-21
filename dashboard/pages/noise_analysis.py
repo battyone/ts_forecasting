@@ -137,7 +137,7 @@ def render_noise_analysis_layout():
 
     return layout
 
-def gen_xy_noise(x,y, x_sd=10,tg_sd=10, n=10):
+def gen_xy_noise(x,y, x_sd=0.1,tg_sd=0, n=10):
     x_noise = np.repeat(x, n) + np.random.normal(0, x_sd, n * len(x))
     y_noise = np.repeat(y, n) + np.random.normal(0, tg_sd, n * len(y))
     return x_noise, y_noise
@@ -153,7 +153,7 @@ def update_figure(x_sd_noise,tg_sd_noise, n_noise_points):
     # Introducing noise in output
     np.random.seed(42)
 
-    generated_data = gen_xy_noise(x,target, x_sd_noise, tg_sd_noise, int(n_noise_points))
+    generated_data = gen_xy_noise(x_train,tg_train, x_sd_noise, tg_sd_noise, int(n_noise_points))
 
     traces = []
 
