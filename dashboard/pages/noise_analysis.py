@@ -17,7 +17,7 @@ target = np.sin(3*np.square(x+0.8))
 # Splitting data
 x_train, x_test, tg_train, tg_test = train_test_split(
     x, target, test_size=0.5, random_state=42)
-
+#
 # Neural Network
 def render_noise_analysis_layout():
     header = html.Div(
