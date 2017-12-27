@@ -6,11 +6,15 @@ import plotly.graph_objs as go
 from dash.dependencies import Input
 from keras.layers import Dense
 from keras.models import Sequential
+from keras import regularizers
 from sklearn.model_selection import train_test_split
 
 from dashboard.app import app
 
-# Create function for approximation
+random_number=11
+    # np.random.randint(1,100)
+print(random_number)
+# Create ideal function
 x = np.linspace(-1, 1, num=100)
 target = np.sin(3 * np.square(x + 0.8))
 
@@ -88,7 +92,7 @@ def render_noise_analysis_layout():
                     id='x-noise-slider',
                     min=0,
                     max=0.5,
-                    value=0,
+                    value=0.1,
                     step=0.01,
                     marks={
                         0: {'label': '0'},
@@ -99,7 +103,7 @@ def render_noise_analysis_layout():
                 ),
             ], className='four columns'),
             html.Div([
-                    dcc.Input(id='data',  type='text', value=50)
+                    dcc.Input(id='data',  type='text', value=15)
             ],className='four columns')
         ], className='row', style={'margin-bottom': '50px', 'margin-left': '2px'}),
         html.Div([
@@ -111,16 +115,16 @@ def render_noise_analysis_layout():
                      children='Number of epochs', className='four columns')
         ], className='row', style={'margin-bottom': '2px','margin-left': '4px'}),
         html.Div([
-            dcc.Input(id='input-1', type='text', value=25, className='four columns'),
-            dcc.Input(id='input-2', type='text', value=25, className='four columns'),
-            dcc.Input(id='input-3', type='text', value=200, className='four columns')
+            dcc.Input(id='input-1', type='text', value=15, className='four columns'),
+            dcc.Input(id='input-2', type='text', value=1, className='four columns'),
+            dcc.Input(id='input-3', type='text', value=500, className='four columns')
         ], className='row', style={'margin-bottom': '50px', 'margin-left': '4px'}),
         html.Div([
             html.Div(id='output-container-button_4',
                      children='Generating number', className='four columns')
             ], className='row', style={'margin-bottom': '2px', 'margin-left': '15px'}),
         html.Div([
-            dcc.Input(id='n_noise_points', type='text', value=10, className='four columns'),
+            dcc.Input(id='n_noise_points', type='text', value=5, className='four columns'),
             dcc.Dropdown(id='dropdown-activation',
                          options=[
                              {'label': 'relu', 'value': 'relu'},
@@ -133,8 +137,8 @@ def render_noise_analysis_layout():
     ])
     return layout
 
-def gen_xy_noise(x,y, x_sd=0.1,tg_sd=0, n=10):
-    np.random.seed(42)
+def gen_xy_noise(x,y, x_sd=0,tg_sd=0, n=5):
+    np.random.seed(random_number)
     x_noise = np.repeat(x, n) + np.random.normal(0, x_sd, n * len(x))
     y_noise = np.repeat(y, n) + np.random.normal(0, tg_sd, n * len(y))
     return x_noise, y_noise
@@ -148,12 +152,16 @@ def gen_xy_noise(x,y, x_sd=0.1,tg_sd=0, n=10):
 )
 
 def update_figure(x_sd_noise,tg_sd_noise, n_noise_points, data):
-    # Splitting data
-    x_train, x_test, tg_train, tg_test = train_test_split(
-        x, target, test_size=(1-float(data)/len(x)), random_state=42)
 
-    # Introducing noise in output
-    generated_data = gen_xy_noise(x_train,tg_train, x_sd_noise, tg_sd_noise, int(n_noise_points))
+    # Splitting data
+    # x_train, x_test, tg_train, tg_test = train_test_split(
+    #     x, target, test_size=(1-float(data)/len(x)), random_state=random_number)
+
+    # Generated train data
+    np.random.seed(random_number)
+    x_org = np.linspace(-1, 1, num=float(data))
+    target_org = np.sin(3 * np.square(x_org + 0.8)) + np.random.normal(0, 0.4, len(x_org))
+    generated_data = gen_xy_noise(x_org, target_org, x_sd_noise, tg_sd_noise, int(n_noise_points))
 
     # print('x_gen_noise: {}, y_gen_noise: {}'.format(len(generated_data[0]), len(generated_data[1])))
     # print('x_train[0]: {}'.format(x_train[0]))
@@ -166,7 +174,7 @@ def update_figure(x_sd_noise,tg_sd_noise, n_noise_points, data):
         x=x,
         y=target,
         mode='markers',
-        name='Original Data')
+        name='Ideal Data')
 
     trace_noise = go.Scatter(
         x=generated_data[0],
@@ -175,8 +183,8 @@ def update_figure(x_sd_noise,tg_sd_noise, n_noise_points, data):
         name='Generated Data for Training')
 
     trace_train = go.Scatter(
-        x=x_train,
-        y=tg_train,
+        x=x_org,
+        y=target_org,
         mode='markers',
         name='Original Data for Training')
 
@@ -225,35 +233,36 @@ def update_NN(n_clicks, graph1, tg_sd_noise,x_sd_noise, input1, input2, input3, 
     if graph1 is not None:
         traces2.extend(graph1['data'])
     if n_clicks:
-        np.random.seed(42)
         # Splitting data
-        x_train, x_test, tg_train, tg_test = train_test_split(
-            x, target, test_size=(1-float(data)/len(x)), random_state=42)
+        # x_train, x_test, tg_train, tg_test = train_test_split(
+        #     x, target, test_size=(1-float(data)/len(x)), random_state=random_number)
+
+        # Generating Data
+        np.random.seed(random_number)
+        x_org = np.linspace(-1, 1, num=float(data))
+        target_org = np.sin(3 * np.square(x_org + 0.8)) + np.random.normal(0, 0.4, len(x_org))
+        generated_data = gen_xy_noise(x_org, target_org, x_sd_noise, tg_sd_noise, int(n_noise_points))
 
         # Building model №1 for original data
         model_1 = Sequential()
-        model_1.add(Dense(int(input1), activation=dropdown, input_shape=(1,)))
-        model_1.add(Dense(int(input2), activation=dropdown))
+        model_1.add(Dense(int(input1), activation=dropdown, kernel_regularizer=regularizers.l2(0.0001), input_shape=(1,)))
+        # model_1.add(Dense(int(input2), activation=dropdown))
         model_1.add(Dense(1, activation='linear'))
         model_1.compile(loss='mse',
                       optimizer='adam',
                       metrics=['mse', 'mape'])
         weights=model_1.get_weights()
-        # print(weights)
-        history = model_1.fit(x_train, tg_train,
-                            batch_size=32,
+        print('Weights: {}'.format(weights))
+        history = model_1.fit(x_org, target_org,
+                            batch_size=len(x_org),
                             epochs=int(input3),
                             verbose=1)
         NN1_pred = model_1.predict(x).reshape(1, -1)
 
-        # Generating Data
-        generated_data = gen_xy_noise(x_train, tg_train, x_sd_noise, tg_sd_noise, int(n_noise_points))
-
-
         # Building model №2 for generated data
         model_2 = Sequential()
-        model_2.add(Dense(int(input1), activation=dropdown, input_shape=(1,)))
-        model_2.add(Dense(int(input2), activation=dropdown))
+        model_2.add(Dense(int(input1), activation=dropdown, kernel_regularizer=regularizers.l2(0.0001), input_shape=(1,)))
+        # model_2.add(Dense(int(input2), activation=dropdown))
         model_2.add(Dense(1, activation='linear'))
         model_2.compile(loss='mse',
                       optimizer='adam',
@@ -261,7 +270,7 @@ def update_NN(n_clicks, graph1, tg_sd_noise,x_sd_noise, input1, input2, input3, 
         model_2.set_weights(weights)
         # print(model_2.get_weights())
         history = model_2.fit(generated_data[0], generated_data[1],
-                            batch_size=32,
+                            batch_size=len(x_org),
                             epochs=int(input3),
                             verbose=1)
         NN2_pred = model_2.predict(x).reshape(1, -1)
@@ -292,7 +301,7 @@ def update_NN(n_clicks, graph1, tg_sd_noise,x_sd_noise, input1, input2, input3, 
         score_2 = model_2.evaluate(x, target, verbose=0)
         mse_1 = 'MSE_1: ' + str(round(score_1[1], 3))
         mse_2 = ' MSE_2: ' + str(round(score_2[1], 3))
-        noise_all=' Noise(x,y):('+str(tg_sd_noise)+','+str(x_sd_noise)+')'
+        noise_all=' Train noise: x('+str(tg_sd_noise)+');y('+str(x_sd_noise)+')'
 
         traces2.extend([trace_test,trace_train])
 
