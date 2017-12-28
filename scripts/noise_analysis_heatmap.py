@@ -70,7 +70,7 @@ layout = go.Layout(
     font=dict(family='Open Sans'),
     xaxis=dict(title='<i>{}</i>'.format('x noise std'), titlefont=dict(size=16), tickfont=dict(size=12)),
     yaxis=dict(title='<i>{}</i>'.format('y noise std'), titlefont=dict(size=16), tickfont=dict(size=12)),
-    legend=dict(font=dict(size=22), orientation='v'),
+    legend=dict(font=dict(size=22), orientation='v')
 )
 fig = go.Figure(data=traces, layout=layout)
 py.offline.plot(fig, filename='../data/output/mse_heatmap.html', auto_open=False)
