@@ -7,12 +7,6 @@ from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 
-def gen_xy_noise(x,y, x_sd=0,tg_sd=0, n=5):
-    np.random.seed(random_number)
-    x_noise = np.repeat(x, n) + np.random.normal(0, x_sd, n * len(x))
-    y_noise = np.repeat(y, n) + np.random.normal(0, tg_sd, n * len(y))
-    return x_noise, y_noise
-
 # Create ideal function
 
 x = np.linspace(-1, 1, num=100)
@@ -20,7 +14,7 @@ target = np.sin(3 * np.square(x + 0.8))
 
 # Ranges of heatmap
 x_noise_std_range = np.linspace(0, 0.2, 5)
-random_number_range =np.linspace(1, 3, 3)
+random_number_range =np.linspace(1, 1, 1)
 # y_noise_std_range = [0.5]
 # y_noise_std_range = np.linspace(0, 0.2, 10)
 
@@ -29,15 +23,22 @@ score_mse = pd.DataFrame(
     data=np.zeros((len(x_noise_std_range), len(random_number_range))),
     index=x_noise_std_range, columns=random_number_range)
 
-for  x_i, x_noise_std in enumerate(x_noise_std_range):
+def gen_xy_noise(x,y, x_sd=0,tg_sd=0, n=5):
+    np.random.seed(random_number)
+    x_noise = np.repeat(x, n) + np.random.normal(0, x_sd, n * len(x))
+    y_noise = np.repeat(y, n) + np.random.normal(0, tg_sd, n * len(y))
+    tg_sd_noise=0
+    return x_noise, y_noise
+
+for  x_i, x_sd_noise in enumerate(x_noise_std_range):
     for random_i, random_number in enumerate(random_number_range):
         print('{}/{}: random_number: {}, x_noise_std: {}'.format(x_i+random_i*len(random_number_range) + 1, len(x_noise_std_range) * len(random_number_range),
                                                                  random_number, x_noise_std))
         # Generated train data
-        np.random.seed(random_number)
+        np.random.seed(np.intp(random_number))
         x_org = np.linspace(-1, 1, num=15)
-        target_org = np.sin(3 * np.square(x_org + 0.8)) + np.random.normal(0, 0.4, len(x_org))
-        generated_data = gen_xy_noise(x_org, target_org, x_sd_noise, tg_sd_noise, int(5))
+        target_orig = np.sin(3 * np.square(x_org + 0.8)) + np.random.normal(0, 0.4, len(x_org))
+        generated_data = gen_xy_noise(x_org, target_orig, x_sd_noise, tg_sd_noise, int(5))
 
         # Building model №1 for original data
         model_1 = Sequential()
