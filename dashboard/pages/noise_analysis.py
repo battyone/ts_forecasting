@@ -144,6 +144,15 @@ def gen_xy_noise(x,y, x_sd=0,tg_sd=0, n=5):
     y_noise = np.repeat(y, n) + np.random.normal(0, tg_sd, n * len(y))
     return x_noise, y_noise
 
+def gen_xy_noise_Minin(x,y, x_sd=0, n=5):
+    np.random.seed(random_number)
+    x_rep=np.repeat(x, n)
+    x_gen=np.random.normal(0, x_sd, n * len(x))
+    y_noise=np.repeat(y, n)
+    x_noise=np.vstack((x_rep, x_gen)).T
+    return x_noise, y_noise
+
+
 @app.callback(
     dash.dependencies.Output('graph1', 'figure'),
     [dash.dependencies.Input('x-noise-slider', 'value'),
@@ -162,7 +171,7 @@ def update_figure(x_sd_noise,tg_sd_noise, n_noise_points, data):
     np.random.seed(random_number)
     x_org = np.linspace(-1, 1, num=int(data))
     target_org = np.sin(3 * np.square(x_org + 0.8)) + np.random.normal(0, 0.4, len(x_org))
-    generated_data = gen_xy_noise(x_org, target_org, x_sd_noise, tg_sd_noise, int(n_noise_points))
+    generated_data = gen_xy_noise_Minin(x_org, target_org, x_sd_noise, int(n_noise_points))
 
     # print('x_gen_noise: {}, y_gen_noise: {}'.format(len(generated_data[0]), len(generated_data[1])))
     # print('x_train[0]: {}'.format(x_train[0]))
@@ -188,6 +197,7 @@ def update_figure(x_sd_noise,tg_sd_noise, n_noise_points, data):
         y=target_org,
         mode='markers',
         name='Original Data for Training')
+
 
     traces.extend([trace_target, trace_noise,trace_train])
 
@@ -242,7 +252,9 @@ def update_NN(n_clicks, graph1, tg_sd_noise,x_sd_noise, input1, input2, input3, 
         np.random.seed(random_number)
         x_org = np.linspace(-1, 1, num=int(data))
         target_org = np.sin(3 * np.square(x_org + 0.8)) + np.random.normal(0, 0.4, len(x_org))
-        generated_data = gen_xy_noise(x_org, target_org, x_sd_noise, tg_sd_noise, int(n_noise_points))
+        generated_data = gen_xy_noise_Minin(x_org, target_org, x_sd_noise, int(n_noise_points))
+
+        noise_for_prediction= np.random.normal(0, x_sd_noise, len(x))
 
         # Building model №1 for original data
         model_1 = Sequential()
@@ -263,16 +275,16 @@ def update_NN(n_clicks, graph1, tg_sd_noise,x_sd_noise, input1, input2, input3, 
 
         # Building model №2 for generated data
         model_2 = Sequential()
-        model_2.add(Dense(int(input1), activation=dropdown, input_shape=(1,)))
+        model_2.add(Dense(int(input1), activation=dropdown, input_shape=(2,)))
         # model_2.add(Dense(int(input2), activation=dropdown))
-        model_2.add(Dense(1, activation='linear'))
+        model_2.add(Dense(1,  input_dim=1, activation='linear'))
         # sgd=optimizers.SGD(lr=0.01, momentum=0.1, decay=0.0, nesterov=False)
         model_2.compile(loss='mse',
                       optimizer='adam',
                       metrics=['mse'])
-        model_2.set_weights(weights)
+        # model_2.set_weights(weights)
         # print(model_2.get_weights())
-        history = model_2.fit(generated_data[0], generated_data[1],
+        history = model_2.fit(generated_data[0:1], generated_data[2],
                             batch_size=len(generated_data[0]),
                             epochs=int(input3),
                             verbose=1)
