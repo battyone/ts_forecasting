@@ -1,3 +1,10 @@
+import plotly as py
+import plotly.graph_objs as go
+import numpy as np
+import pandas as pd
+from keras.models import Sequential
+from keras.layers import Dense, Dropout
+
 # Parameters
 x_noise_number=50
 y_noise_number=30
