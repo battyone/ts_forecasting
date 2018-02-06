@@ -17,8 +17,8 @@ target = np.sin(3 * np.square(x + 0.8))
 random_number=11
 
 # Ranges of heatmap
-x_noise_std_range = np.linspace(0, 0.01, x_noise_number)
-y_noise_std_range = np.linspace(0, 0.04, y_noise_number)
+x_noise_std_range = np.linspace(0, 0.6, x_noise_number)
+y_noise_std_range = np.linspace(0, 0.6, y_noise_number)
 # y_noise_std_range = [0.5]
 
 # score_mse = [[0 for x in range(len(x_noise_std_range))] for y in range(len(y_noise_std_range))]
