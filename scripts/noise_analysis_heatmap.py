@@ -6,8 +6,8 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout
 
 # Parameters
-x_noise_number=50
-y_noise_number=30
+x_noise_number=60
+y_noise_number=45
 epoch_number=10000
 
 # Creating Input & Output
@@ -17,7 +17,7 @@ target = np.sin(3 * np.square(x + 0.8))
 random_number=11
 
 # Ranges of heatmap
-x_noise_std_range = np.linspace(0, 0.09, x_noise_number)
+x_noise_std_range = np.linspace(0, 0.01, x_noise_number)
 y_noise_std_range = np.linspace(0, 0.04, y_noise_number)
 # y_noise_std_range = [0.5]
 
@@ -66,12 +66,12 @@ for y_i, y_noise_std in enumerate(y_noise_std_range):
         # Matrix
         score_mse[y_noise_std][x_noise_std] = test_mse
 
-        print(score_mse)
-        # print(list(score_mse.index))
+        print(score_mse.columns)
+        print(score_mse.index)
         # print(list(score_mse.columns.values))
 
 # Plotting heat map
-trace = go.Heatmap(z=score_mse.values, x=score_mse.columns, y=score_mse.index, colorscale='Viridis', reversescale=True,
+trace = go.Heatmap(z=score_mse.values, x=score_mse.index, y=score_mse.columns, colorscale='Viridis', reversescale=True,
                    transpose = True)
 traces = [trace]
 layout = go.Layout(
