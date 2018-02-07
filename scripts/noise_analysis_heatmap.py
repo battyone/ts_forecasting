@@ -7,24 +7,39 @@ from keras.layers import Dense, Dropout
 
 random_number=11
 
+# Function to approximate
+def f(x):
+    y = 0.45*np.sin(x)+0.5
+    # y = np.sin(3 * np.square(x + 0.8))
+    # y = 3*np.sin(x)+1.5*np.sin(4*x)-np.sin(5*x)+2*np.cos(7*x)-1.5*np.sin(10*x)+0.2*np.cos(10*x)-\
+    #     0.1*np.cos(15*x)+np.sin(23*x)
+    return y
+
+
 # Parameters
-x_noise_number=60
-y_noise_number=45
-epoch_number=10000
+x_noise_number=2
+x_noise_range = [0,0.6]
+y_noise_number=2
+y_noise_range = [0, 0.6]
+epoch_number=100
 
-y_noise_left_range = 0
-y_noise_right_range = 0.6
-x_noise_left_range = 0
-x_noise_right_range = 0.6
-
-# Creating Input & Output
+# Other
+y_measurement_error=0.4
 x = np.linspace(-1, 1, num=1000)
-target = np.sin(3 * np.square(x + 0.8))
+x_range=[-1,1]
+# x_range=[-np.pi,np.pi]
+y_measurement_error=0.4
+
+# Test Data
+x = np.linspace(x_range[0], x_range[1], num=1000)
+
+# Ideal target
+target = f(x)
 
 
 # Ranges of heatmap
-x_noise_std_range = np.linspace(x_noise_left_range, x_noise_right_range, x_noise_number)
-y_noise_std_range = np.linspace(y_noise_left_range, y_noise_right_range, y_noise_number)
+x_noise_std_range = np.linspace(x_noise_range[0], x_noise_range[1], x_noise_number)
+y_noise_std_range = np.linspace(y_noise_range[0], y_noise_range[1], y_noise_number)
 # y_noise_std_range = [0.5]
 
 score_mse = pd.DataFrame(
@@ -42,10 +57,12 @@ for y_i, y_noise_std in enumerate(y_noise_std_range):
         print('{}/{}: y_noise_std: {}, x_noise_std: {}'.format(x_i+y_i*len(y_noise_std_range) + 1, len(x_noise_std_range) * len(y_noise_std_range),
                                                                y_noise_std, x_noise_std))
 
-        # Generating Data
+        # Original Training Data
         np.random.seed(random_number)
         x_org = np.linspace(-1, 1, 15)
-        target_org = np.sin(3 * np.square(x_org + 0.8)) + np.random.normal(0, 0.4, len(x_org))
+        target_org = f(x_org) + np.random.normal(0, y_measurement_error, len(x_org))
+
+        # Generated Training Data
         generated_data = gen_xy_noise(x_org, target_org, x_noise_std, y_noise_std, 1000)
 
         # Building model №2 for generated data
@@ -70,7 +87,6 @@ for y_i, y_noise_std in enumerate(y_noise_std_range):
 
         # Matrix
         score_mse[y_noise_std][x_noise_std] = test_mse
-
         print(score_mse.columns)
         print(score_mse.index)
         # print(list(score_mse.columns.values))

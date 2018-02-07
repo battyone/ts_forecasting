@@ -6,24 +6,31 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout
 
 random_number = 11
+np.random.seed(random_number)
+
+# Function to approximate
+def f(x):
+    # y = 0.45*np.sin(x)+0.5
+    y = np.sin(3 * np.square(x + 0.8))
+    # y = 3*np.sin(x)+1.5*np.sin(4*x)-np.sin(5*x)+2*np.cos(7*x)-1.5*np.sin(10*x)+0.2*np.cos(10*x)-\
+    #     0.1*np.cos(15*x)+np.sin(23*x)
+    return y
+
 
 # Parameters
-x_noise_number = 2
 epoch_number = 2
+epochs_range = [10, 100]
 y_noise_std = 0
-
-epoch_left_range = 1000
-epoch_right_range = 10000
-x_noise_left_range = 0
-x_noise_right_range = 0.6
+x_noise_number = 2
+x_noise_range = [0, 0.6]
 
 # Creating Input & Output
 x = np.linspace(-1, 1, num=1000)
-target = np.sin(3 * np.square(x + 0.8))
+target = f(x)
 
 # Ranges
-x_noise_std_range = np.linspace(x_noise_left_range, x_noise_right_range, x_noise_number)
-epoch_range = np.linspace(epoch_left_range, epoch_right_range, x_noise_number)
+x_noise_std_range = np.linspace(x_noise_range[0], x_noise_range[1], x_noise_number)
+epoch_range = np.linspace(epochs_range[0], epochs_range[1], epoch_number)
 
 # Score
 score_mse = pd.DataFrame(
@@ -39,10 +46,12 @@ def gen_xy_noise(x,y, x_sd=0,tg_sd=0, n=5):
 for epoch_i, epoch in enumerate(epoch_range):
     for x_i, x_noise_std in enumerate(x_noise_std_range):
         print('Epoch number: {}, x_noise_std: {}'.format(epoch, x_noise_std))
-        # Generating Data
-        np.random.seed(random_number)
+
+        # Original Training Data
         x_org = np.linspace(-1, 1, 15)
-        target_org = np.sin(3 * np.square(x_org + 0.8)) + np.random.normal(0, 0.4, len(x_org))
+        target_org = f(x_org) + np.random.normal(0, 0.4, len(x_org))
+
+        # Generated Training Data
         generated_data = gen_xy_noise(x_org, target_org, x_noise_std, y_noise_std, 1000)
 
         # Building model №2 for generated data
@@ -67,7 +76,6 @@ for epoch_i, epoch in enumerate(epoch_range):
 
         # Matrix
         score_mse[epoch][x_noise_std] = test_mse
-
         # print('epoch: {}'.format(score_mse.columns))
         # print('x_noise_std: {}'.format(score_mse.index))
         # print('Epoch: {}'.format(epoch))
