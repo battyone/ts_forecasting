@@ -24,8 +24,10 @@ y_noise_std = 0
 x_noise_number = 2
 x_noise_range = [0, 0.6]
 
-# Creating Input & Output
-x = np.linspace(-1, 1, num=1000)
+# Test Data
+x = np.linspace(x_range[0], x_range[1], num=1000)
+
+# Ideal target
 target = f(x)
 
 # Ranges

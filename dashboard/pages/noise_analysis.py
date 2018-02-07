@@ -28,7 +28,8 @@ def f(x):
 # Parameters
 # x_range=[-1,1]
 x_range=[-np.pi,np.pi]
-y_measurement_error=0.4
+y_measurement_error=0.1
+# y_measurement_error=0.4
 
 # Test Data
 x = np.linspace(x_range[0], x_range[1], num=1000)

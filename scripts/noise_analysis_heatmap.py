@@ -37,7 +37,7 @@ x = np.linspace(x_range[0], x_range[1], num=1000)
 target = f(x)
 
 
-# Ranges of heatmap
+# Ranges
 x_noise_std_range = np.linspace(x_noise_range[0], x_noise_range[1], x_noise_number)
 y_noise_std_range = np.linspace(y_noise_range[0], y_noise_range[1], y_noise_number)
 # y_noise_std_range = [0.5]
