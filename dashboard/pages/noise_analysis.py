@@ -124,8 +124,8 @@ def render_noise_analysis_layout():
                 html.Div(id='output-container-button_4', children='Generating number', className='four columns')
         ], className='row', style={'margin-bottom': '0px', 'margin-left': '470px'}),
         html.Div([
-            dcc.Input(id='data', type='text', value=15, className='four columns'),
-            dcc.Input(id='n_noise_points', type='text', value=5, className='four columns')
+                dcc.Input(id='data', type='text', value=15, className='four columns'),
+                dcc.Input(id='n_noise_points', type='text', value=5, className='four columns')
         ], className='row', style={'margin-bottom': '20px', 'margin-left': '470px'}),
         html.Div([
             html.Div(id='output-container-button_1',
@@ -144,20 +144,22 @@ def render_noise_analysis_layout():
                      children='Activation function (output layer)', className='four columns')
         ], className='row', style={'margin-bottom': '0px', 'margin-left': '470px'}),
         html.Div([
-            dcc.Dropdown(id='dropdown-activation',
-                         options=[
-                             {'label': 'relu', 'value': 'relu'},
-                             {'label': 'tanh', 'value': 'tanh'}
-                         ],
-                         value='tanh', className='four columns'
-                         ),
-            dcc.Dropdown(id='dropdown-activation-output',
-                         options=[
-                             {'label': 'linear', 'value': 'linear'},
-                             {'label': 'sigmoid', 'value': 'sigmoid'}
-                         ],
-                         value='linear', className='four columns',
-                         )
+            html.Div([
+                dcc.Dropdown(id='dropdown-activation',
+                             options=[
+                                 {'label': 'relu', 'value': 'relu'},
+                                 {'label': 'tanh', 'value': 'tanh'},
+                                 {'label': 'sigmoid', 'value': 'sigmoid'}
+                             ],
+                             value='tanh', className='four columns')], style = {'margin-left': '20px'}),
+            html.Div([
+                dcc.Dropdown(id='dropdown-activation-output',
+                             options=[
+                                 {'label': 'linear', 'value': 'linear'},
+                                 {'label': 'sigmoid', 'value': 'sigmoid'}
+                             ],
+                             value='linear', className='four columns',
+                             )], style = {'margin-left': '20px'})
         ], className='row', style={'margin-bottom': '20px', 'margin-left': '470px'}),
         html.Div([
             html.Button(id='submit-button', n_clicks=0, children='Start NN', className='row')
@@ -209,7 +211,7 @@ def update_figure(x_sd_noise,tg_sd_noise, data, n_noise_points):
 
     # Training data
     x_org = np.linspace(x_range[0], x_range[1], num=int(data))
-    target_org = f(x_org) + np.random.normal(0, y_measurement_error_std, len(x_org))
+    target_org = f(x_org) + np.random.normal(0, y_measurement_error, len(x_org))
 
     # Generated data
     generated_data = gen_xy_noise(x_org, target_org, x_sd_noise, tg_sd_noise, int(n_noise_points))
@@ -328,13 +330,16 @@ def update_NN(n_clicks, graph1, tg_sd_noise,x_sd_noise, data, input1, input3, dr
         # Metrics
         score_1 = model_1.evaluate(x, target, verbose=0)
         score_2 = model_2.evaluate(x, target, verbose=0)
-        mse_1 = 'MSE_1: ' + str(round(score_1[1], 3))
-        mse_2 = ' MSE_2: ' + str(round(score_2[1], 3))
-        noise_all=' Train noise: x('+str(x_sd_noise)+');y('+str(tg_sd_noise)+')'
-
+        mse_1 = 'MSE 1: {}'.format(str(round(score_1[1], 3)))
+        mse_2 = 'MSE 2: {}'.format(str(round(score_2[1], 3)))
+        noise_all='Noise on X & Y ~ N(0,{}) & N(0,{})'.format(np.square(x_sd_noise).round(3),
+                                                       np.square(tg_sd_noise).round(3))
+        breaks = '||'
         if graph1 is not None:
             traces2.extend(graph1['data'])
+        if score_1 is '':
+            breaks = ''
 
         traces2.extend([trace_orig, trace_gen])
 
-    return {'data': traces2, 'layout':  {'title': mse_1+','+mse_2+','+noise_all}}
+    return {'data': traces2, 'layout':  {'title': mse_1+breaks+mse_2+breaks+noise_all}}
