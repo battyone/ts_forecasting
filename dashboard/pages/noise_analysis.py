@@ -16,8 +16,8 @@ random_number=11
 # print(random_number)
 
 # Function to approximate
-x = np.linspace(-1, 1, num=1000)
-target = np.sin(3 * np.square(x + 0.8))
+x = np.linspace(-3, 3, num=1000)
+target = 3*np.sin(x)+1.5*np.sin(4*x)-np.sin(5*x)+2*np.cos(7*x)-1.5*np.sin(10*x)+0.2*np.cos(10*x)-0.1*np.cos(15*x)+np.sin(23*x)
 
 # Design
 def render_noise_analysis_layout():
@@ -160,8 +160,11 @@ def update_figure(x_sd_noise,tg_sd_noise, n_noise_points, data):
 
     # Generating training data
     np.random.seed(random_number)
-    x_org = np.linspace(-1, 1, num=int(data))
-    target_org = np.sin(3 * np.square(x_org + 0.8)) + np.random.normal(0, 0.4, len(x_org))
+    x_org = np.linspace(-3, 3, num=int(data))
+    # target = np.sin(3 * np.square(x + 0.8))+ np.random.normal(0, 0.4, len(x_org))
+    target_org = 3 * np.sin(x_org) + 1.5 * np.sin(4 * x_org) - np.sin(5 * x_org) + 2 * np.cos(7 * x_org) - 1.5 * np.sin(
+        10 * x_org) + 0.2 * np.cos(10 * x_org) - 0.1 * np.cos(15 * x_org) + np.sin(23 * x_org)+ \
+                 np.random.normal(0, 0.4, len(x_org))
     generated_data = gen_xy_noise(x_org, target_org, x_sd_noise, tg_sd_noise, int(n_noise_points))
 
     # print('x_gen_noise: {}, y_gen_noise: {}'.format(len(generated_data[0]), len(generated_data[1])))

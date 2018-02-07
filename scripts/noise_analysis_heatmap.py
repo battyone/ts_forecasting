@@ -12,7 +12,8 @@ epoch_number=10000
 
 # Creating Input & Output
 x = np.linspace(-1, 1, num=1000)
-target = np.sin(3 * np.square(x + 0.8))
+# target = np.sin(3 * np.square(x + 0.8))
+target = np.sinc(x)
 
 random_number=11
 
@@ -88,7 +89,6 @@ py.offline.plot(fig, filename='/Users/stepazar/Library/Mobile Documents/com~appl
 # Plotting loss chart
 traces = []
 for y_noise_std in score_mse.columns:
-    # print(score_mse[y_noise_std].values)
     trace = go.Scatter(x=list(score_mse.index), y=score_mse[y_noise_std].values, name='y_noise_std: {}'.format(y_noise_std))
     traces.append(trace)
 layout = go.Layout(
