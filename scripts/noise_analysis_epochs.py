@@ -12,13 +12,18 @@ x_noise_number = 2
 epoch_number = 2
 y_noise_std = 0
 
+epoch_left_range = 1000
+epoch_right_range = 10000
+x_noise_left_range = 0
+x_noise_right_range = 0.6
+
 # Creating Input & Output
 x = np.linspace(-1, 1, num=1000)
 target = np.sin(3 * np.square(x + 0.8))
 
 # Ranges
-x_noise_std_range = np.linspace(0, 0.1, x_noise_number)
-epoch_range = np.linspace(1000, 5000, x_noise_number)
+x_noise_std_range = np.linspace(x_noise_left_range, x_noise_right_range, x_noise_number)
+epoch_range = np.linspace(epoch_left_range, epoch_right_range, x_noise_number)
 
 # Score
 score_mse = pd.DataFrame(

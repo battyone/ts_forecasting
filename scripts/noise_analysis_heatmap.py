@@ -5,24 +5,28 @@ import pandas as pd
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 
+random_number=11
+
 # Parameters
 x_noise_number=60
 y_noise_number=45
 epoch_number=10000
 
+y_noise_left_range = 0
+y_noise_right_range = 0.6
+x_noise_left_range = 0
+x_noise_right_range = 0.6
+
 # Creating Input & Output
 x = np.linspace(-1, 1, num=1000)
-# target = np.sin(3 * np.square(x + 0.8))
-target = np.sinc(x)
+target = np.sin(3 * np.square(x + 0.8))
 
-random_number=11
 
 # Ranges of heatmap
-x_noise_std_range = np.linspace(0, 0.6, x_noise_number)
-y_noise_std_range = np.linspace(0, 0.6, y_noise_number)
+x_noise_std_range = np.linspace(x_noise_left_range, x_noise_right_range, x_noise_number)
+y_noise_std_range = np.linspace(y_noise_left_range, y_noise_right_range, y_noise_number)
 # y_noise_std_range = [0.5]
 
-# score_mse = [[0 for x in range(len(x_noise_std_range))] for y in range(len(y_noise_std_range))]
 score_mse = pd.DataFrame(
     data=np.zeros((len(x_noise_std_range), len(y_noise_std_range))),
     index=x_noise_std_range, columns=y_noise_std_range)
