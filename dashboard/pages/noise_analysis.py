@@ -151,7 +151,7 @@ def render_noise_analysis_layout():
                                  {'label': 'tanh', 'value': 'tanh'},
                                  {'label': 'sigmoid', 'value': 'sigmoid'}
                              ],
-                             value='tanh', className='four columns')], style = {'margin-left': '20px'}),
+                             value='tanh', className='four columns')], style = {}),
             html.Div([
                 dcc.Dropdown(id='dropdown-activation-output',
                              options=[
@@ -159,7 +159,7 @@ def render_noise_analysis_layout():
                                  {'label': 'sigmoid', 'value': 'sigmoid'}
                              ],
                              value='linear', className='four columns',
-                             )], style = {'margin-left': '20px'})
+                             )], style = {'margin-left': '500px'})
         ], className='row', style={'margin-bottom': '20px', 'margin-left': '470px'}),
         html.Div([
             html.Button(id='submit-button', n_clicks=0, children='Start NN', className='row')
@@ -330,16 +330,13 @@ def update_NN(n_clicks, graph1, tg_sd_noise,x_sd_noise, data, input1, input3, dr
         # Metrics
         score_1 = model_1.evaluate(x, target, verbose=0)
         score_2 = model_2.evaluate(x, target, verbose=0)
-        mse_1 = 'MSE 1: {}'.format(str(round(score_1[1], 3)))
-        mse_2 = 'MSE 2: {}'.format(str(round(score_2[1], 3)))
+        mse_1 = 'MSE 1: {}||'.format(str(round(score_1[1], 3)))
+        mse_2 = 'MSE 2: {}||'.format(str(round(score_2[1], 3)))
         noise_all='Noise on X & Y ~ N(0,{}) & N(0,{})'.format(np.square(x_sd_noise).round(3),
                                                        np.square(tg_sd_noise).round(3))
-        breaks = '||'
         if graph1 is not None:
             traces2.extend(graph1['data'])
-        if score_1 is '':
-            breaks = ''
 
         traces2.extend([trace_orig, trace_gen])
 
-    return {'data': traces2, 'layout':  {'title': mse_1+breaks+mse_2+breaks+noise_all}}
+    return {'data': traces2, 'layout':  {'title': mse_1+mse_2+noise_all}}
