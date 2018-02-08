@@ -25,6 +25,7 @@ def f(x):
     #     0.1*np.cos(15*x)+np.sin(23*x)
     return y
 
+
 # Parameters
 # x_range=[-1,1]
 x_range=[-np.pi,np.pi]
@@ -192,7 +193,7 @@ def callback_a(value):
     dash.dependencies.Output('training_split', 'children'),
     [dash.dependencies.Input('data', 'value')])
 def callback_a(value):
-    return 'Training set proportion: {}%'.format(float(value)/len(x)*100)
+    return 'Training set proportion: {}%'.format(round(float(value)/(len(x)+float(value))*100, 1))
 
 
 @app.callback(
@@ -261,7 +262,9 @@ def update_figure(x_sd_noise,tg_sd_noise, data, n_noise_points):
      ]
 )
 
-def update_NN(n_clicks, graph1, tg_sd_noise,x_sd_noise, data, input1, input3, dropdown, dropdown_output, n_noise_points):
+
+def update_NN(n_clicks, graph1, tg_sd_noise,x_sd_noise, data, input1, input3, dropdown,
+              dropdown_output, n_noise_points):
     np.random.seed(random_number)
     traces2 = []
     mse_1 = ''

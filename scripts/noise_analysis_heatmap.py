@@ -52,6 +52,7 @@ def gen_xy_noise(x,y, x_sd=0,tg_sd=0, n=5):
     y_noise = np.repeat(y, n) + np.random.normal(0, tg_sd, n * len(y))
     return x_noise, y_noise
 
+
 for y_i, y_noise_std in enumerate(y_noise_std_range):
     for x_i, x_noise_std in enumerate(x_noise_std_range):
         print('{}/{}: y_noise_std: {}, x_noise_std: {}'.format(x_i+y_i*len(y_noise_std_range) + 1, len(x_noise_std_range) * len(y_noise_std_range),

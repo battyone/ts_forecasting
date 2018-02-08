@@ -45,6 +45,7 @@ def gen_xy_noise(x,y, x_sd=0,tg_sd=0, n=5):
     y_noise = np.repeat(y, n) + np.random.normal(0, tg_sd, n * len(y))
     return x_noise, y_noise
 
+
 for epoch_i, epoch in enumerate(epoch_range):
     for x_i, x_noise_std in enumerate(x_noise_std_range):
         print('Epoch number: {}, x_noise_std: {}'.format(epoch, x_noise_std))
